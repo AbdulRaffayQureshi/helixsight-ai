@@ -1,0 +1,520 @@
+{
+  "version": 1,
+  "hash_prefix": "hs1:",
+  "defaults": {
+    "max_bp": 5000000
+  },
+  "notes": "Generated from backend sanitizer.py; consumed by backend/tests/test_golden_vectors.py and frontend/src/lib/canonicalize.test.ts. raw_offset counts Unicode code points.",
+  "cases": [
+    {
+      "id": "raw-dna-plain",
+      "description": "Raw unformatted nucleotides get a deterministic pasted-<sha8> name",
+      "input": "ATGCATGCGC",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "pasted-ae4fd976",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "ATGCATGCGC",
+            "length": 10,
+            "gc_pct": 60.0,
+            "a": 2,
+            "c": 3,
+            "g": 3,
+            "t": 2,
+            "ambiguous": 0,
+            "sha256": "ae4fd976a84b454c7882ca874ea603868a50a44195b796d8bc97e97032da9ef7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "raw-lowercase-whitespace",
+      "description": "Lowercase, spaces, tabs and newlines are stripped; letters upper-cased",
+      "input": "  atgc atgc\n\tgcgc  \n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "pasted-9fb3f13c",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "ATGCATGCGCGC",
+            "length": 12,
+            "gc_pct": 66.66666666666667,
+            "a": 2,
+            "c": 4,
+            "g": 4,
+            "t": 2,
+            "ambiguous": 0,
+            "sha256": "9fb3f13cd9ed630839403b9edf2d86946cc729f15c43b218b65dd42ad36df692"
+          }
+        ]
+      }
+    },
+    {
+      "id": "genbank-line-numbers-terminator",
+      "description": "GenBank ORIGIN-style line numbers, spacing and a '*' terminator",
+      "input": "        1 atgcatgcat gcatgcatgc\n       21 aattccggaa tt*\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "pasted-087fd6f7",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "ATGCATGCATGCATGCATGCAATTCCGGAATT",
+            "length": 32,
+            "gc_pct": 43.75,
+            "a": 9,
+            "c": 7,
+            "g": 7,
+            "t": 9,
+            "ambiguous": 0,
+            "sha256": "087fd6f74aec707ef24b02c15c680020e6192b0d8071309342c623619d858f1f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fasta-single-header-description-wrapped",
+      "description": "One FASTA record: first header token is the name, the rest the description",
+      "input": ">NM_004006.3 Homo sapiens dystrophin (DMD), transcript variant Dp427m, mRNA\nATGCTTTGGTGGGAAGAAGTAGAGGACTGTTATGAAAGAGAAGATGTTCAAAAGAAAACA\nTTCACAAAATGGGTAAATGCACAAAAAT\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "NM_004006.3",
+            "description": "Homo sapiens dystrophin (DMD), transcript variant Dp427m, mRNA",
+            "molecule": "DNA",
+            "residues": "ATGCTTTGGTGGGAAGAAGTAGAGGACTGTTATGAAAGAGAAGATGTTCAAAAGAAAACATTCACAAAATGGGTAAATGCACAAAAAT",
+            "length": 88,
+            "gc_pct": 34.09090909090909,
+            "a": 39,
+            "c": 8,
+            "g": 22,
+            "t": 19,
+            "ambiguous": 0,
+            "sha256": "59a616ab6d5b2034d329e6ca4915e136278c9a5bad996be091d80a34d23d298e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "multi-fasta-crlf",
+      "description": "Multi-FASTA with CRLF newlines yields one record per header",
+      "input": ">seq1 first\r\nACGTACGTAC\r\nGGCCGGCC\r\n>seq2\r\nTTTTAAAACC\r\n>seq3 third one\r\nGATTACA\r\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "seq1",
+            "description": "first",
+            "molecule": "DNA",
+            "residues": "ACGTACGTACGGCCGGCC",
+            "length": 18,
+            "gc_pct": 72.22222222222223,
+            "a": 3,
+            "c": 7,
+            "g": 6,
+            "t": 2,
+            "ambiguous": 0,
+            "sha256": "ee0ae5353fd700e08d66769ef6ed4ec30bbd4d3ac48c4953f0736fb423d9f11d"
+          },
+          {
+            "display_name": "seq2",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "TTTTAAAACC",
+            "length": 10,
+            "gc_pct": 20.0,
+            "a": 4,
+            "c": 2,
+            "g": 0,
+            "t": 4,
+            "ambiguous": 0,
+            "sha256": "fc9fbff032bef3f5f44404e0c3865b8e03c473b17819075db413481f1de0f3ab"
+          },
+          {
+            "display_name": "seq3",
+            "description": "third one",
+            "molecule": "DNA",
+            "residues": "GATTACA",
+            "length": 7,
+            "gc_pct": 28.571428571428573,
+            "a": 3,
+            "c": 1,
+            "g": 1,
+            "t": 2,
+            "ambiguous": 0,
+            "sha256": "a471242ec53a5ea12046a20c11c3369061699999753899e143eac81727bf2e50"
+          }
+        ]
+      }
+    },
+    {
+      "id": "multi-fasta-empty-record-warning",
+      "description": "An empty record is skipped with a warning; the others are kept",
+      "input": ">a\nACGT\n>empty record\n>b\nTTGG\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": ["record \"empty\" is empty and was skipped"],
+        "records": [
+          {
+            "display_name": "a",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "ACGT",
+            "length": 4,
+            "gc_pct": 50.0,
+            "a": 1,
+            "c": 1,
+            "g": 1,
+            "t": 1,
+            "ambiguous": 0,
+            "sha256": "2d266d8966ac13428289fe7690cc9ff389203fa8c90997bbb5fbeb71765fe45a"
+          },
+          {
+            "display_name": "b",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "TTGG",
+            "length": 4,
+            "gc_pct": 50.0,
+            "a": 0,
+            "c": 0,
+            "g": 2,
+            "t": 2,
+            "ambiguous": 0,
+            "sha256": "20a1e5aeab20e0ffa554f16ce1a2f5f0320ddd73ed063d8da07b6f001d7cd94d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rna-u-to-t",
+      "description": "RNA (U present, no T) is folded to DNA and flagged molecule=RNA",
+      "input": ">rna1 test transcript\nAUGGCCAUUGUAAUGGGCCGCUGA\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "rna1",
+            "description": "test transcript",
+            "molecule": "RNA",
+            "residues": "ATGGCCATTGTAATGGGCCGCTGA",
+            "length": 24,
+            "gc_pct": 54.166666666666664,
+            "a": 5,
+            "c": 5,
+            "g": 8,
+            "t": 6,
+            "ambiguous": 0,
+            "sha256": "31c0502fd8032dcf34594660f1351df8d3ca181785eacc4e41d4c5478343fce5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mixed-u-and-t-invalid",
+      "description": "U together with T is not RNA and not DNA: INVALID_IUPAC on the U",
+      "input": "ACGUACGT",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": false,
+        "code": "INVALID_IUPAC",
+        "detail": { "offset": 3, "raw_offset": 3, "char": "U" }
+      }
+    },
+    {
+      "id": "iupac-ambiguity-mixed-case",
+      "description": "IUPAC ambiguity codes are accepted; GC% excludes them from the denominator",
+      "input": "acgtnnrykmswbdhvACGT",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "pasted-ab73ba8b",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "ACGTNNRYKMSWBDHVACGT",
+            "length": 20,
+            "gc_pct": 50.0,
+            "a": 2,
+            "c": 2,
+            "g": 2,
+            "t": 2,
+            "ambiguous": 12,
+            "sha256": "ab73ba8bcab2101bb9de643cc1e0c36265cac0dfec7001fb57432426baa0c50c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "all-ambiguous-gc-zero",
+      "description": "No unambiguous base: gc_pct is 0.0, ambiguous counts every residue",
+      "input": "NNNNNN",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "pasted-2396c827",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "NNNNNN",
+            "length": 6,
+            "gc_pct": 0.0,
+            "a": 0,
+            "c": 0,
+            "g": 0,
+            "t": 0,
+            "ambiguous": 6,
+            "sha256": "2396c8275891f40d4461844aebaea5280254b2b02149cf922ffa329b49545578"
+          }
+        ]
+      }
+    },
+    {
+      "id": "invalid-char-simple",
+      "description": "offset == raw_offset when nothing is stripped before the bad character",
+      "input": "ACGTZACGT",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": false,
+        "code": "INVALID_IUPAC",
+        "detail": { "offset": 4, "raw_offset": 4, "char": "Z" }
+      }
+    },
+    {
+      "id": "invalid-char-after-header-whitespace-digits",
+      "description": "offset (cleaned) differs from raw_offset (input text, header included)",
+      "input": ">hdr 1\nAC GT\n 5 AZGT\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": false,
+        "code": "INVALID_IUPAC",
+        "detail": { "offset": 5, "raw_offset": 17, "char": "Z" }
+      }
+    },
+    {
+      "id": "invalid-lowercase-reports-uppercase",
+      "description": "Invalid lowercase letters are reported in upper case",
+      "input": "acgtxacgt",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": false,
+        "code": "INVALID_IUPAC",
+        "detail": { "offset": 4, "raw_offset": 4, "char": "X" }
+      }
+    },
+    {
+      "id": "invalid-non-ascii-letter",
+      "description": "Non-ASCII letters are never case-folded into IUPAC letters; reported verbatim",
+      "input": "ACGT\u00e9ACGT",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": false,
+        "code": "INVALID_IUPAC",
+        "detail": { "offset": 4, "raw_offset": 4, "char": "\u00e9" }
+      }
+    },
+    {
+      "id": "invalid-emoji-header-codepoint-offsets",
+      "description": "raw_offset counts Unicode code points (the header emoji is ONE position)",
+      "input": ">test \ud83e\uddec\nACGTX\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": false,
+        "code": "INVALID_IUPAC",
+        "detail": { "offset": 4, "raw_offset": 12, "char": "X" }
+      }
+    },
+    {
+      "id": "empty-string",
+      "description": "Empty input",
+      "input": "",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": { "ok": false, "code": "EMPTY_SEQUENCE", "detail": null }
+    },
+    {
+      "id": "header-only-and-digits-only",
+      "description": "A header followed only by digits/whitespace has no residues",
+      "input": ">only header\n  12 34 \n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": { "ok": false, "code": "EMPTY_SEQUENCE", "detail": null }
+    },
+    {
+      "id": "label-single-record-keeps-description",
+      "description": "A label renames a single record; the description is kept",
+      "input": ">x some desc\nACGT\n",
+      "options": { "label": "mine", "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "mine",
+            "description": "some desc",
+            "molecule": "DNA",
+            "residues": "ACGT",
+            "length": 4,
+            "gc_pct": 50.0,
+            "a": 1,
+            "c": 1,
+            "g": 1,
+            "t": 1,
+            "ambiguous": 0,
+            "sha256": "2d266d8966ac13428289fe7690cc9ff389203fa8c90997bbb5fbeb71765fe45a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "label-multi-record-prefix",
+      "description": "With several records the label becomes a prefix",
+      "input": ">a\nAC\n>b\nGT\n",
+      "options": { "label": "L", "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "L:a",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "AC",
+            "length": 2,
+            "gc_pct": 50.0,
+            "a": 1,
+            "c": 1,
+            "g": 0,
+            "t": 0,
+            "ambiguous": 0,
+            "sha256": "02c3da1cb6046dae7386634c47a1f17c669b0b4ddb5e7e5cfe74c332088694b2"
+          },
+          {
+            "display_name": "L:b",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "GT",
+            "length": 2,
+            "gc_pct": 50.0,
+            "a": 0,
+            "c": 0,
+            "g": 1,
+            "t": 1,
+            "ambiguous": 0,
+            "sha256": "cd64db0d9c3234e8c5514ab7b4069714c9b4420f747e63a2f4a36ded9c120f70"
+          }
+        ]
+      }
+    },
+    {
+      "id": "too-long",
+      "description": "SEQUENCE_TOO_LONG reports length and max",
+      "input": "ACGTACGTAC",
+      "options": { "label": null, "name_hint": null, "max_bp": 8 },
+      "expect": {
+        "ok": false,
+        "code": "SEQUENCE_TOO_LONG",
+        "detail": { "length": 10, "max": 8 }
+      }
+    },
+    {
+      "id": "nbsp-bom-gaps-and-name-hint",
+      "description": "NBSP, BOM, '-' gaps are stripped; name_hint names a header-less record",
+      "input": "\ufeffAC\u00a0G-T",
+      "options": { "label": null, "name_hint": "sample", "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "sample",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "ACGT",
+            "length": 4,
+            "gc_pct": 50.0,
+            "a": 1,
+            "c": 1,
+            "g": 1,
+            "t": 1,
+            "ambiguous": 0,
+            "sha256": "2d266d8966ac13428289fe7690cc9ff389203fa8c90997bbb5fbeb71765fe45a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "preamble-before-first-header",
+      "description": "Residues before the first header form an unnamed record of their own",
+      "input": "ACGT\n>x\nTTGG\n",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": true,
+        "warnings": [],
+        "records": [
+          {
+            "display_name": "pasted-2d266d89",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "ACGT",
+            "length": 4,
+            "gc_pct": 50.0,
+            "a": 1,
+            "c": 1,
+            "g": 1,
+            "t": 1,
+            "ambiguous": 0,
+            "sha256": "2d266d8966ac13428289fe7690cc9ff389203fa8c90997bbb5fbeb71765fe45a"
+          },
+          {
+            "display_name": "x",
+            "description": null,
+            "molecule": "DNA",
+            "residues": "TTGG",
+            "length": 4,
+            "gc_pct": 50.0,
+            "a": 0,
+            "c": 0,
+            "g": 2,
+            "t": 2,
+            "ambiguous": 0,
+            "sha256": "20a1e5aeab20e0ffa554f16ce1a2f5f0320ddd73ed063d8da07b6f001d7cd94d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unicode-digit-is-invalid",
+      "description": "Only ASCII digits are line numbers; an Arabic-Indic digit is an invalid character",
+      "input": "AC\u0663GT",
+      "options": { "label": null, "name_hint": null, "max_bp": 5000000 },
+      "expect": {
+        "ok": false,
+        "code": "INVALID_IUPAC",
+        "detail": { "offset": 2, "raw_offset": 2, "char": "\u0663" }
+      }
+    }
+  ]
+}

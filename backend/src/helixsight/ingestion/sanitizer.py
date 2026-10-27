@@ -1,12 +1,23 @@
+"""FASTA / raw-sequence canonicalization (doc 01 section 3.0). Byte-identical twin of frontend/src/lib/canonicalize.ts;
+both are pinned by docs/golden_vectors.json."""
 from __future__ import annotations
+
 import re
 from typing import Optional
+
 from ..db.repo import CanonicalRecord
 from ..errors import HSError
 from .hasher import sha256_canonical
 
-_STRIP = re.compile(r"[\s\d*\-\ufeff]+")
+_STRIP = re.compile(r"[ \t\n\r\f\v\u00a0\ufeff0-9*-]+")
 _BAD = re.compile(r"[^ACGTRYSWKMBDHVN]")
+_LOWER = re.compile(r"[a-z]+")
+_WS = " \t\n\r\f\v\u00a0"
+
+
+def _upper(s: str) -> str:
+    return s.upper() if s.isascii() else _LOWER.sub(lambda m: m.group().upper(), s)
+
 
 def _split(text: str) -> list[tuple[Optional[str], list[tuple[int, int]]]]:
     recs: list[tuple[Optional[str], list[tuple[int, int]]]] = []
@@ -17,11 +28,12 @@ def _split(text: str) -> list[tuple[Optional[str], list[tuple[int, int]]]]:
         start, pos = pos, pos + len(line) + 1
         if line.startswith(">"):
             recs.append((header, spans))
-            header, spans = line[1:].strip(), []
+            header, spans = line[1:].strip(_WS), []
         else:
             spans.append((start, start + len(line)))
     recs.append((header, spans))
     return recs
+
 
 def _raw_offset(text: str, spans: list[tuple[int, int]], idx: int) -> Optional[int]:
     n = 0
@@ -34,17 +46,23 @@ def _raw_offset(text: str, spans: list[tuple[int, int]], idx: int) -> Optional[i
             n += 1
     return None
 
-def canonicalize(text: str, *, label: Optional[str] = None, name_hint: Optional[str] = None,
-                 max_bp: int = 5_000_000) -> tuple[list[CanonicalRecord], list[str]]:
+
+def canonicalize(
+    text: str,
+    *,
+    label: Optional[str] = None,
+    name_hint: Optional[str] = None,
+    max_bp: int = 5_000_000,
+) -> tuple[list[CanonicalRecord], list[str]]:
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     out: list[CanonicalRecord] = []
     warnings: list[str] = []
     parsed = []
     for header, spans in _split(text):
-        cleaned = _STRIP.sub("", "".join(text[s:e] for s, e in spans)).upper()
+        cleaned = _upper(_STRIP.sub("", "".join(text[s:e] for s, e in spans)))
         if not cleaned:
             if header is not None:
-                warnings.append(f"record {header.split(None, 1)[0] if header else 'unnamed'!r} is empty and was skipped")
+                warnings.append(f'record "{header.partition(" ")[0] or "unnamed"}" is empty and was skipped')
             continue
         parsed.append((header, spans, cleaned))
     if not parsed:
@@ -55,12 +73,18 @@ def canonicalize(text: str, *, label: Optional[str] = None, name_hint: Optional[
         if "U" in cleaned and "T" not in cleaned:
             cleaned, molecule = cleaned.replace("U", "T"), "RNA"
         if len(cleaned) > max_bp:
-            raise HSError("SEQUENCE_TOO_LONG", f"Sequence has {len(cleaned):,} bases; the limit is {max_bp:,}",
-                          {"length": len(cleaned), "max": max_bp})
+            raise HSError(
+                "SEQUENCE_TOO_LONG",
+                f"Sequence has {len(cleaned):,} bases; the limit is {max_bp:,}",
+                {"length": len(cleaned), "max": max_bp},
+            )
         bad = _BAD.search(cleaned)
         if bad:
-            raise HSError("INVALID_IUPAC", f"Invalid nucleotide {bad.group()!r} at residue offset {bad.start()}",
-                          {"offset": bad.start(), "raw_offset": _raw_offset(text, spans, bad.start()), "char": bad.group()})
+            raise HSError(
+                "INVALID_IUPAC",
+                f"Invalid nucleotide {bad.group()!r} at residue offset {bad.start()}",
+                {"offset": bad.start(), "raw_offset": _raw_offset(text, spans, bad.start()), "char": bad.group()},
+            )
         sha = sha256_canonical(cleaned)
         a, c, g, t = (cleaned.count(x) for x in "ACGT")
         acgt = a + c + g + t
@@ -71,6 +95,20 @@ def canonicalize(text: str, *, label: Optional[str] = None, name_hint: Optional[
                 name = label if len(parsed) == 1 else f"{label}:{hdr_name}"
         else:
             name = label or name_hint or f"pasted-{sha[:8]}"
-        out.append(CanonicalRecord(sha, cleaned, molecule, len(cleaned), 100.0 * (g + c) / acgt if acgt else 0.0,
-                                   a, c, g, t, len(cleaned) - acgt, name, hdr_desc.strip() or None))
+        out.append(
+            CanonicalRecord(
+                sha,
+                cleaned,
+                molecule,
+                len(cleaned),
+                100.0 * (g + c) / acgt if acgt else 0.0,
+                a,
+                c,
+                g,
+                t,
+                len(cleaned) - acgt,
+                name,
+                hdr_desc.strip(_WS) or None,
+            )
+        )
     return out, warnings
