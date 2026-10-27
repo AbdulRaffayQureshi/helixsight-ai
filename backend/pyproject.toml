@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "helixsight"
+version = "0.1.0"
+description = "HelixSight AI backend: ingestion, streaming, ML inference"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "httpx>=0.27",
+  "python-multipart>=0.0.9",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4",
+  "duckdb>=1.1",
+  "watchdog>=5.0",
+  "numpy>=1.26",
+  "scikit-learn>=1.5",
+  "torch>=2.4",
+  "onnx>=1.16",
+  "onnxruntime>=1.19",
+  "helixsight-core",
+]
+
+[project.optional-dependencies]
+bio = ["biopython>=1.84"]
+zstd = ["zstandard>=0.23"]
+hf = ["transformers>=4.44", "optimum[onnxruntime]>=1.22"]
+
+[tool.uv.sources]
+helixsight-core = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/helixsight"]
