@@ -1,0 +1,12 @@
+{
+  "model_id": "hs-cnnbilstm-v1",
+  "weights_sha256": "dev-stub-weights",
+  "artifacts": {
+    "onnx_fp32": "hs-cnnbilstm-v1.fp32.onnx",
+    "pt": "model.pt"
+  },
+  "scope": {
+    "trained_on": "Synthetic Test Data",
+    "warning": "Untrained stub network for development"
+  }
+}
