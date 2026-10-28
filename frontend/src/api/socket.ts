@@ -69,6 +69,11 @@ export class ManagedSocket {
     this.ws.send(data);
   }
 
+  /** Close the transport but keep auto-reconnect armed (heartbeat timeout, server restart). */
+  drop(code = 4408, reason = ""): void {
+    this.ws?.close(code, reason);
+  }
+
   close(code = 1000, reason = ""): void {
     this.userClosed = true;
     if (this.timer) { clearTimeout(this.timer); this.timer = null; }

@@ -146,8 +146,8 @@ export class ScanClient {
 
   close(): void {
     this.stopPing();
-    this.sock.close(1000, "client closed");
     this.rejectPending(new ScanClientError("CLOSED", "client closed"));
+    this.sock.close(1000, "client closed");
   }
 
   private newRequestId(): string { return `m${++this.seq}-${Date.now().toString(36)}`; }

@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import type { AnomalyRegion, Mutation } from "../contracts/history";
+import type { AnomalyRegion, ModelScope, Mutation } from "../contracts/history";
 import type { Base4, ErrorBody, Molecule } from "../contracts/ingest";
 import {
-  CHANNEL, FRAME_TYPE, N_CHANNELS, type EvServerNotice, type EvWatcherStatus, type ModelScopeLike, type TelemetryFrame,
+  CHANNEL, FRAME_TYPE, N_CHANNELS, type EvServerNotice, type EvWatcherStatus, type TelemetryFrame,
   type WsAnomalyAlert, type WsError, type WsProgress, type WsScanComplete, type WsScanReady,
 } from "../contracts/ws";
 import type { ScanHandlers, StartScanRequest } from "../api/wsScan";
@@ -41,7 +41,7 @@ const services: HelixServices = { scan: null, persistMutation: null, checkpointD
 export function configureHelixServices(s: Partial<HelixServices>): void { Object.assign(services, s); }
 
 export interface HelixState {
-  active: ActiveSequence | null; status: ScanStatus; cache: "HIT" | "MISS" | null; paramsHash: string | null; modelScope: ModelScopeLike | null;
+  active: ActiveSequence | null; status: ScanStatus; cache: "HIT" | "MISS" | null; paramsHash: string | null; modelScope: ModelScope | null;
   scanError: ErrorBody | null; notices: ErrorBody[]; progress: number; filledUpTo: number; anomalyCount: number; durationMs: number | null;
   channelIds: number[]; planes: (Float32Array | null)[]; overview: Overview | null; regions: AnomalyRegion[]; mutations: Mutation[];
   pendingBase: number | null; selectedBase: number | null; hoveredBase: number | null; heatDomain: { min: number; max: number };
