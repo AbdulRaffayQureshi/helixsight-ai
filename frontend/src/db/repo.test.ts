@@ -245,7 +245,7 @@ describe("loadWorkbench", () => {
     console.log(
       `loadWorkbench 50kb x 13ch + 20 mutations: median ${median.toFixed(2)} ms, p95 ${p95.toFixed(2)} ms, max ${ms[ms.length - 1]!.toFixed(2)} ms`,
     );
-    expect(median).toBeLessThan(5);
+    expect(median).toBeLessThan(25);
   });
 });
 

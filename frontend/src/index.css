@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #070b14;
+  --panel: #0d1424;
+  --panel-2: #121c33;
+  --border: #1b2740;
+  --text: #e6edf7;
+  --muted: #9aabc8;
+  --head: #22d3ee;
+  --laser: #ff2bd6;
+  --alert: #f43f5e;
+  color-scheme: dark;
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-abyss-950 font-sans text-ink antialiased;
+    margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible { outline: 2px solid #22d3ee; outline-offset: 2px; }
+  ::selection { background: rgba(255, 43, 214, 0.35); }
+  * { scrollbar-width: thin; scrollbar-color: #27375a transparent; }
+  *::-webkit-scrollbar { width: 8px; height: 8px; }
+  *::-webkit-scrollbar-thumb { background: #27375a; border-radius: 8px; }
+  button, input, select, textarea { font: inherit; }
+  input[type="range"] { accent-color: #22d3ee; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .panel { @apply rounded-lg border border-abyss-700 bg-abyss-850/90 shadow-panel backdrop-blur; }
+  .btn { @apply inline-flex items-center justify-center gap-1.5 rounded-md border border-abyss-600 bg-abyss-800 px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-electric/70 hover:bg-abyss-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-abyss-600 disabled:hover:bg-abyss-800; }
+  .btn-primary { @apply border-electric bg-electric/15 text-electric-bright hover:bg-electric/25; }
+  .btn-laser { @apply border-laser bg-laser/15 text-laser-bright hover:bg-laser/25; }
+  .btn-danger { @apply border-alert/70 bg-alert/10 text-alert hover:bg-alert/20; }
+  .btn-ghost { @apply border-transparent bg-transparent hover:border-abyss-600 hover:bg-abyss-800; }
+  .input { @apply w-full rounded-md border border-abyss-600 bg-abyss-900 px-2.5 py-1.5 text-sm text-ink placeholder:text-ink-faint focus:border-electric focus:outline-none; }
+  .label { @apply mb-1 block text-xs font-medium uppercase tracking-wide text-ink-dim; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full border border-abyss-600 bg-abyss-900/80 px-2 py-0.5 text-xs text-ink-dim; }
+  .kbd { @apply rounded border border-abyss-600 bg-abyss-900 px-1 font-mono text-[10px] text-ink-dim; }
+}
